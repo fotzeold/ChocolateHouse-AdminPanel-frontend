@@ -1,0 +1,47 @@
+@import "../../styles/variables.scss";
+
+main.auth{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+
+	.auth__wrapper{
+		max-width: 360px;
+		width: 100%;
+	}
+
+	h1{
+		font-size: 32px;
+		margin-bottom: 20px;
+	}
+
+	form{
+		display: flex;
+		gap: 10px;
+		flex-direction: column;
+	}
+
+	input{
+		color: $black;
+		height: 40px;
+		border-radius: 5px;
+		outline: none;
+		padding: 0 10px;
+		border: none;
+		font-size: 18px;
+	}	
+	
+	.auth__author{
+		color: $gray;
+		font-size: 16px;
+		position: absolute;
+		bottom: 20px;
+		width: 100%;
+		left: 0;
+		display: block;
+		text-align: center;
+		text-decoration: none;
+	}
+}
