@@ -2,11 +2,16 @@ import "./Table.scss";
 import { useState, useEffect } from 'react';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const Table = ({ title, data, columns }) => {
+const Table = ({ title, data, columns, createLink, deleteInfo }) => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [currentPage, setCurrentPage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(25);
+	const location = useLocation()
 
 	const filteredData = data.filter(item => {
 		return columns.some(col => {
@@ -45,6 +50,22 @@ const Table = ({ title, data, columns }) => {
 		}
 	};
 
+	const renderActionField = (id = "") => {
+		return (
+			<div className="table__action">
+				<Link className="action-btn edit-btn" to={`${location.pathname}/${id}`}>
+					<EditIcon />
+				</Link>
+				{
+					deleteInfo &&
+					<button className="action-btn delete-btn" onClick={() => deleteInfo(id)}>
+						<DeleteIcon />
+					</button>
+				}
+			</div>
+		)
+	}
+
 	useEffect(() => {
 		const handleResize = () => {
 			const rowHeight = 36;
@@ -62,21 +83,18 @@ const Table = ({ title, data, columns }) => {
 	}, []);
 
 
-
-	if (!data || data.length === 0) {
-		return <p>No data available</p>;
-	}
-
 	return (
 		<div className="table">
 			<div className="table__top">
 				<h1>{title}</h1>
 				<input
 					type="text"
-					placeholder="Search..."
+					placeholder="Пошук..."
+					className="inp"
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
 				/>
+				{createLink && <Link to={createLink.path} className="btn create-btn">{createLink.label}</Link>}
 			</div>
 			<table border="1" cellPadding="10" cellSpacing="0">
 				<thead>
@@ -87,13 +105,24 @@ const Table = ({ title, data, columns }) => {
 					</tr>
 				</thead>
 				<tbody>
-					{currentItems.map((item, index) => (
-						<tr key={index + "-table-tr"}>
-							{columns.map((col, index) => (
-								<td key={index + "-table-td"}>{item[col.key] || '—'}</td>
-							))}
-						</tr>
-					))}
+
+					{
+						(!data || data.length === 0) ?
+							<tr><td>No data available</td></tr> :
+							currentItems.map((item, index) => (
+								<tr key={index + "-table-tr"}>
+									{
+										columns.map((col, index) => {
+											return (
+												<td key={index + "-table-td"}>
+													{col.type === "actionField" ? renderActionField(item._id) : (item[col.key] || '—')}
+												</td>
+											)
+										})
+									}
+								</tr>
+							))
+					}
 				</tbody>
 			</table>
 			<div className="table__bottom">
@@ -128,7 +157,7 @@ const Table = ({ title, data, columns }) => {
 					</div>
 				</div>
 			</div>
-		</div>
+		</div >
 	);
 };
 

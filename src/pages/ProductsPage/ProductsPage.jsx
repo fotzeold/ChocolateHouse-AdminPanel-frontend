@@ -9,6 +9,11 @@ const ProductsPage = () => {
 
 	const columns = [
 		{
+			label: "Керування",
+			key: "",
+			type: "actionField"
+		},
+		{
 			label: "Назва",
 			key: "name"
 		},

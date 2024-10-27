@@ -71,5 +71,68 @@ async function getData(route, isToken = false) {
 	}
 }
 
-export { login, verif, getData }
+async function postData(route, data) {
+	const url = _BASE_URL + route;
+
+	try {
+		const token = sessionStorage.getItem('token');
+		if (!token) throw new Error("Токена немає!");
+
+		const headers = {
+			'Content-Type': 'application/json',
+			'api-key': _API_KEY,
+			'Authorization': `Bearer ${token}`
+		};
+
+		const response = await axios.post(url, data, { headers });
+
+		return response.data
+	} catch (error) {
+		throw error.response ? error.response.data : new Error(error.message);
+	}
+}
+
+async function putData(route, data) {
+	const url = _BASE_URL + route;
+
+	try {
+		const token = sessionStorage.getItem('token');
+		if (!token) throw new Error("Токена немає!");
+
+		const headers = {
+			'Content-Type': 'application/json',
+			'api-key': _API_KEY,
+			'Authorization': `Bearer ${token}`
+		};
+
+		const response = await axios.put(url, data, { headers });
+
+		return response.data
+	} catch (error) {
+		throw error.response ? error.response.data : new Error(error.message);
+	}
+}
+
+async function deleteData(route) {
+	const url = _BASE_URL + route;
+
+	try {
+		const token = sessionStorage.getItem('token');
+		if (!token) throw new Error("Токена немає!");
+
+		const headers = {
+			'Content-Type': 'application/json',
+			'api-key': _API_KEY,
+			'Authorization': `Bearer ${token}`
+		};
+
+		const response = await axios.delete(url, { headers });
+
+		return response.data
+	} catch (error) {
+		throw error.response ? error.response.data : new Error(error.message);
+	}
+}
+
+export { login, verif, getData, postData, putData, deleteData }
 

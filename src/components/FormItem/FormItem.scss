@@ -1,0 +1,26 @@
+@import "../../styles/variables.scss";
+
+section.form-page{
+	form{
+		max-width: 300px;
+		width: 100%;
+		input, textarea{
+			width: 100%;
+			margin-bottom: 10px;
+		}
+		textarea{
+			height: 64px;
+			resize: none;
+			&::-webkit-scrollbar{
+				width: 8px;
+				background: none;
+			}
+			&::-webkit-scrollbar-thumb{
+				border-radius: 5px;
+				border: 2px solid white;
+				background: $accent;
+			}
+		}
+
+	}
+}

@@ -3,6 +3,7 @@ import { icons } from "../utils/constants"
 import Sidebar from "./Sidebar/Sidebar"
 import { verif } from "../services/service"
 import { useNavigate } from "react-router-dom"
+import { ToastContainer } from 'react-toastify';
 
 const ProtectedRoute = ({ element }) => {
 	const [user, setUser] = useState(null)
@@ -43,6 +44,7 @@ const ProtectedRoute = ({ element }) => {
 			<main style={{ padding: "10px 20px 6px 20px", width: "100%" }}>
 				{element}
 			</main>
+			<ToastContainer className="notification" />
 		</div>
 	)
 }

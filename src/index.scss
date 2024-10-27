@@ -20,6 +20,15 @@ h1{
 	font-weight: 500;
 	height: 36px;
 	line-height: 36px;
+	a{
+		text-decoration: none;
+	}
+}
+
+h2{
+	font-size: 24px;
+	margin: 20px 0;
+	font-weight: 500;
 }
 
 .btn{
@@ -37,6 +46,37 @@ h1{
 	}
 }
 
+.inp{
+	height: 32px;
+	padding: 0 8px;
+	outline: none;
+	border: none;
+	color: $black;
+	border-radius: 5px;
+	font-size: 16px;
+}
+
+.lbl{
+	display: block;
+	margin-bottom: 6px;
+	font-size: 14px;
+}
+
+.txt-area{
+	padding: 4px 8px;
+	font-size: 16px;
+	border-radius: 5px;
+	color: $black;
+	outline: none;
+	border: none;
+}
+
 .nav-link{
 	text-decoration: none;
+}
+
+.notification{
+	.Toastify__toast-theme--light{
+		background: $dark;
+	}
 }
