@@ -31,7 +31,7 @@ const ProtectedRoute = ({ element }) => {
 		navigate("/", { replace: true })
 	}
 
-	if (user === null) return <img src={icons.loaderIcon} alt="Loading..." />
+	if (user === null) return <img className="loader-spinner" src={icons.loaderIcon} alt="Loading..." />
 
 	if (!user) {
 		handleLogout()
@@ -41,7 +41,7 @@ const ProtectedRoute = ({ element }) => {
 	return (
 		<div className="app" style={{ display: "flex" }}>
 			<Sidebar logout={handleLogout} />
-			<main style={{ padding: "10px 20px 6px 20px", width: "100%" }}>
+			<main style={{ padding: "10px 20px 6px 20px", width: "100%", position: "relative" }}>
 				{element}
 			</main>
 			<ToastContainer className="notification" />

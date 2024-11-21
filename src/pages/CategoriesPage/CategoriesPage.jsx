@@ -51,7 +51,7 @@ const CategoriesPage = () => {
 		getCategories();
 	}, [])
 
-	if (categories === null) return <img src={icons.loaderIcon} alt="Loading..." />
+	if (categories === null) return <img className="loader-spinner" src={icons.loaderIcon} alt="Loading..." />
 	if (!categories) return null
 
 	return (

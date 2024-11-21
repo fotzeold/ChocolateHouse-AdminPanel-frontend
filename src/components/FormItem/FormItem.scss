@@ -2,10 +2,10 @@
 
 section.form-page{
 	form{
-		max-width: 300px;
 		width: 100%;
-		input, textarea{
+		input, textarea, select{
 			width: 100%;
+			max-width: 300px;
 			margin-bottom: 10px;
 		}
 		textarea{
@@ -21,6 +21,84 @@ section.form-page{
 				background: $accent;
 			}
 		}
+		button{
+			max-width: 300px;
+		}
+		.file-inputs-container{
+			margin-bottom: 10px;
+			display: flex;
+			gap: 5px;
+			input{
+				opacity: 0;
+				width: 100%;
+				height: 100%;
+				cursor: pointer;
+			}
+			.file-input-container{
+				height: 120px;
+				width: 120px;
+				border-radius: 10px;
+				background: $dark;
+				position: relative;
+				z-index: 1;
 
+				&::after, &::before{
+					content: "";
+					display: block;
+					width: 40px;
+					height: 6px;
+					background: $loyaout;
+					position: absolute;
+					top: 50%;
+					left: 50%;
+					z-index: 1;
+					border-radius: 5px;
+					transform: translate(-50%, -50%);
+				}
+				&::before{
+					width: 6px;
+					height: 40px;
+				}
+			}
+			.file-preview{
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 2;
+				border-radius: 10px;
+				overflow: hidden;
+				.image-preview-container{
+					height: 120px;
+					width: 120px;
+				}
+				img{
+					width: 100%;
+					transition: all 0.2s;
+					height: 100%;
+					object-fit: cover;
+				}
+				button{
+					position: absolute;
+					bottom: 2px;
+					right: 4px;
+					background: none;
+					border: none;
+					display: none;
+					cursor: pointer;
+					path{
+						color: $red;
+					}
+				}
+
+				&:hover{
+					img{
+						filter: brightness(0.3);
+					}
+					button{
+						display: block;
+					}
+				}
+			}
+		}
 	}
 }

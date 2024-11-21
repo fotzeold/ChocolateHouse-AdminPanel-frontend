@@ -10,6 +10,7 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import ChatIcon from '@mui/icons-material/Chat';
 import EngineeringIcon from '@mui/icons-material/Engineering';
 import CategoryIcon from '@mui/icons-material/Category';
+import CollectionsIcon from '@mui/icons-material/Collections';
 
 const Sidebar = ({ logout }) => {
 	const [isShowMenu, setShowMenu] = useState(true);
@@ -31,6 +32,12 @@ const Sidebar = ({ logout }) => {
 					className={({ isActive }) => `nav-link ${isActive ? 'current' : ''}`}>
 					<SvgIcon component={HomeIcon} />
 					<span>Головна</span>
+				</NavLink>
+				<NavLink
+					to="/gallery"
+					className={({ isActive }) => `nav-link ${isActive ? 'current' : ''}`}>
+					<SvgIcon component={CollectionsIcon} />
+					<span>Галерея</span>
 				</NavLink>
 				<NavLink
 					to="/products"

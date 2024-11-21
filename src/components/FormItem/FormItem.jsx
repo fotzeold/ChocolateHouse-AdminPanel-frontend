@@ -1,8 +1,10 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { postData, putData, getData } from "../../services/service";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { icons } from "../../utils/constants";
 import showNotification from "../../utils/notification";
-import "./FormItem.scss"
+import DeleteIcon from '@mui/icons-material/Delete';
+import "./FormItem.scss";
 
 const FormItem = ({
 	endpoint,
@@ -17,10 +19,11 @@ const FormItem = ({
 	},
 	customLoadTransform,
 	customSaveTransform,
-	onFileUpload
 }) => {
 	const { id } = useParams();
 	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(!!id);
+	const fileInputRefs = useRef({});
 
 	const initialState = fields.reduce((acc, field) => {
 		if (field.type === 'checkbox') {
@@ -30,7 +33,7 @@ const FormItem = ({
 		} else if (field.type === 'select') {
 			acc[field.name] = field.defaultValue || '';
 		} else if (field.type === 'file') {
-			acc[field.name] = null;
+			acc[field.name] = Array(5).fill(null);
 		} else {
 			acc[field.name] = field.defaultValue || "";
 		}
@@ -53,52 +56,149 @@ const FormItem = ({
 				const transformedData = customLoadTransform
 					? customLoadTransform(data.result)
 					: data.result;
-				setFormData(transformedData);
+
+				const newFormData = { ...transformedData };
+				const newFilePreview = { ...filePreview };
+
+				fields.forEach(field => {
+					if (field.type === 'file') {
+						const existingImages = Array.isArray(transformedData[field.name])
+							? transformedData[field.name]
+							: transformedData[field.name]
+								? [transformedData[field.name]]
+								: [];
+
+						newFormData[field.name] = Array(5).fill(null)
+							.map((_, index) => existingImages[index] || null);
+
+						newFilePreview[field.name] = {};
+						existingImages.forEach((url, index) => {
+							if (url) {
+								newFilePreview[field.name][index] = url;
+							}
+						});
+					}
+				});
+
+				setFormData(newFormData);
+				setFilePreview(newFilePreview);
 			}
 		} catch (error) {
 			showNotification(messages.loadError, "error");
 			navigate(returnPath);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
-	const handleFileChange = async (name, file) => {
+	const handleFileChange = (name, file, index) => {
 		if (file) {
+			const previewUrl = URL.createObjectURL(file);
 			setFilePreview(prev => ({
 				...prev,
-				[name]: URL.createObjectURL(file)
+				[name]: { ...prev[name], [index]: previewUrl }
 			}));
 
-			if (onFileUpload) {
-				try {
-					const fileUrl = await onFileUpload(file);
-					handleInputChange(name, fileUrl);
-				} catch (error) {
-					showNotification("Помилка завантаження файлу", "error");
-				}
-			} else {
-				handleInputChange(name, file);
-			}
+			setFormData(prev => {
+				const newFiles = [...prev[name]];
+				newFiles[index] = file;
+				return { ...prev, [name]: newFiles };
+			});
 		}
+	};
+
+	// const handleFileChange = async (name, file, index) => {
+	// 	if (file) {
+
+	// 		console.log(file)
+
+	// 		const previewUrl = URL.createObjectURL(file);
+	// 		setFilePreview(prev => ({
+	// 			...prev,
+	// 			[name]: {
+	// 				...prev[name],
+	// 				[index]: previewUrl
+	// 			}
+	// 		}));
+
+	// 		if (onFileUpload) {
+	// 			try {
+	// 				const fileUrl = await onFileUpload(file);
+	// 				handleInputChange(name, formData[name].map((item, i) =>
+	// 					i === index ? fileUrl : item
+	// 				));
+	// 			} catch (error) {
+	// 				setFilePreview(prev => {
+	// 					const newPreviews = { ...prev };
+	// 					if (newPreviews[name]) {
+	// 						delete newPreviews[name][index];
+	// 					}
+	// 					return newPreviews;
+	// 				});
+	// 				showNotification("Помилка завантаження файлу", "error");
+	// 			}
+	// 		} else {
+	// 			setFormData(prev => {
+	// 				const newFiles = [...prev[name]];
+	// 				newFiles[index] = file; // или fileUrl в случае onFileUpload
+	// 				return {
+	// 					...prev,
+	// 					[name]: newFiles
+	// 				};
+	// 			});
+	// 		}
+	// 	}
+	// };
+
+	const handleRemoveFile = (name, index) => {
+		if (filePreview[name]?.[index]) {
+			URL.revokeObjectURL(filePreview[name][index]);
+		}
+
+		setFilePreview(prev => {
+			const newPreviews = { ...prev };
+			if (newPreviews[name]) {
+				delete newPreviews[name][index];
+			}
+			return newPreviews;
+		});
+
+		if (fileInputRefs.current[`${name}-${index}`]) {
+			fileInputRefs.current[`${name}-${index}`].value = "";
+		}
+
+		handleInputChange(
+			name,
+			formData[name].map((item, i) => i === index ? null : item)
+		);
 	};
 
 	const sendData = async () => {
 		try {
-			const dataToSend = customSaveTransform
-				? customSaveTransform(formData)
-				: formData;
+			const formDataToSend = new FormData();
 
+			// Добавляем в formDataToSend все поля
+			Object.keys(formData).forEach((key) => {
+				if (Array.isArray(formData[key])) {
+					// Если это массив (например, файлы), добавляем каждый файл отдельно
+					formData[key].forEach((item) => {
+						if (item) formDataToSend.append(key, item); // только если item не null
+					});
+				} else {
+					formDataToSend.append(key, formData[key]);
+				}
+			});
+
+			// Отправка данных через postData или putData
 			let result;
 			if (id) {
-				result = await putData(`${endpoint}/${id}`, dataToSend);
+				result = await putData(`${endpoint}/${id}`, formDataToSend, { headers: { "Content-Type": "multipart/form-data" } });
 			} else {
-				result = await postData(endpoint, dataToSend);
+				result = await postData(endpoint, formDataToSend, { headers: { "Content-Type": "multipart/form-data" } });
 			}
 
 			if (result.status) {
-				showNotification(
-					id ? messages.updateSuccess : messages.createSuccess,
-					"success"
-				);
+				showNotification(id ? messages.updateSuccess : messages.createSuccess, "success");
 				navigate(returnPath);
 			} else {
 				showNotification(messages.error, "error");
@@ -107,6 +207,43 @@ const FormItem = ({
 			showNotification(messages.error, "error");
 		}
 	};
+
+	// const sendData = async () => {
+	// 	try {
+	// 		const preparedData = { ...formData };
+	// 		fields.forEach(field => {
+	// 			if (field.type === 'file' && Array.isArray(preparedData[field.name])) {
+	// 				preparedData[field.name] = preparedData[field.name].filter(item => item !== null);
+	// 			}
+	// 		});
+
+	// 		const dataToSend = customSaveTransform
+	// 			? customSaveTransform(preparedData)
+	// 			: preparedData;
+
+	// 		let result;
+
+	// 		console.log(dataToSend)
+
+	// 		if (id) {
+	// 			result = await putData(`${endpoint}/${id}`, dataToSend);
+	// 		} else {
+	// 			result = await postData(endpoint, dataToSend);
+	// 		}
+
+	// 		if (result.status) {
+	// 			showNotification(
+	// 				id ? messages.updateSuccess : messages.createSuccess,
+	// 				"success"
+	// 			);
+	// 			navigate(returnPath);
+	// 		} else {
+	// 			showNotification(messages.error, "error");
+	// 		}
+	// 	} catch (error) {
+	// 		showNotification(messages.error, "error");
+	// 	}
+	// };
 
 	const handleFormSend = (event) => {
 		event.preventDefault();
@@ -122,6 +259,57 @@ const FormItem = ({
 
 	const renderField = (field) => {
 		switch (field.type) {
+			case 'file':
+				return (
+					<div className="file-inputs-container">
+						{Array(5).fill(null).map((_, index) => (
+							<div key={index} className="file-input-wrapper">
+								<div className="file-input-container">
+									<input
+										ref={el => fileInputRefs.current[`${field.name}-${index}`] = el}
+										id={`${field.name}-${index}`}
+										type="file"
+										className="file-input"
+										accept={field.accept}
+										onChange={(e) => handleFileChange(field.name, e.target.files[0], index)}
+										required={field.required && index === 0 && !filePreview[field.name]?.[index]}
+									/>
+									{filePreview[field.name]?.[index] && field.showPreview && (
+										<div className="file-preview">
+											{field.accept?.includes('image/') ? (
+												<div className="image-preview-container">
+													<img
+														src={filePreview[field.name][index]}
+														alt={`Preview ${index + 1}`}
+														className="image-preview"
+													/>
+													<button
+														type="button"
+														className="remove-image"
+														onClick={() => handleRemoveFile(field.name, index)}
+													>
+														<DeleteIcon />
+													</button>
+												</div>
+											) : (
+												<div className="file-name">
+													<button
+														type="button"
+														className="remove-file"
+														onClick={() => handleRemoveFile(field.name, index)}
+													>
+														<DeleteIcon />
+													</button>
+												</div>
+											)}
+										</div>
+									)}
+								</div>
+							</div>
+						))}
+					</div>
+				);
+
 			case 'textarea':
 				return (
 					<textarea
@@ -187,35 +375,6 @@ const FormItem = ({
 					</div>
 				);
 
-			case 'file':
-				return (
-					<div className="file-input-container">
-						<input
-							id={field.name}
-							type="file"
-							className="file-input"
-							accept={field.accept}
-							onChange={(e) => handleFileChange(field.name, e.target.files[0])}
-							required={field.required}
-						/>
-						{filePreview[field.name] && field.showPreview && (
-							<div className="file-preview">
-								{field.accept?.includes('image/') ? (
-									<img
-										src={filePreview[field.name]}
-										alt="Preview"
-										className="image-preview"
-									/>
-								) : (
-									<div className="file-name">
-										Файл обрано
-									</div>
-								)}
-							</div>
-						)}
-					</div>
-				);
-
 			default:
 				return (
 					<input
@@ -230,6 +389,17 @@ const FormItem = ({
 				);
 		}
 	};
+
+	if (isLoading) {
+		return (
+			<section className="form-page">
+				<h1>
+					<Link to={returnPath}>⬅︎ Назад</Link>
+				</h1>
+				<img className="loader-spinner" src={icons.loaderIcon} alt="Loading..." />
+			</section>
+		);
+	}
 
 	return (
 		<section className="form-page">

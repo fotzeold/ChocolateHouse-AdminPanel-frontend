@@ -99,11 +99,11 @@
 			cursor: pointer;
 			&.edit-btn:hover path{
 				transition: all 0.2s;
-				color: yellow;
+				color: $yellow;
 			}
 			&.delete-btn:hover path{
 				transition: all 0.2s;
-				color: rgb(255, 57, 57);
+				color: $red;
 			}
 		}
 	}

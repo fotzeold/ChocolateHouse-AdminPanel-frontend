@@ -52,7 +52,7 @@ const ProductsPage = () => {
 		getProducts();
 	}, [])
 
-	if (products === null) return <img src={icons.loaderIcon} alt="Loading..." />
+	if (products === null) return <img className="loader-spinner" src={icons.loaderIcon} alt="Loading..." />
 	if (!products) return null
 
 	return (
@@ -61,6 +61,7 @@ const ProductsPage = () => {
 				title={"Продукти"}
 				columns={columns}
 				data={products}
+				createLink={{ label: "Додати продукт", path: "/products/new" }}
 			/>
 		</section>
 	)
